@@ -428,7 +428,7 @@ Function Python27MessageBox
   
   ReadEnvStr $R0 "PATH"
   Push "PATH"
-  Push "$R0;%GEONODE_PATHEXT%"
+  Push "%GEONODE_PATHEXT%;$R0"
   call WriteEnvVar
     
   ; Call Python
@@ -553,7 +553,7 @@ Function PythonLeave
     
 	ReadEnvStr $R0 "PATH"
 	Push "PATH"
-    Push "$R0;%GEONODE_PATHEXT%"
+    Push "%GEONODE_PATHEXT%;$R0"
 	call WriteEnvVar
     
     ; update system path
@@ -993,7 +993,7 @@ Function WinLAMPMessageBox
 
   File "${WINLAMP_EXE}"
 
-  ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port /D=$INSTDIR"
+  ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER="$INSTDIR\${GEONODE_FOLDER}" /D=$INSTDIR"
   
   endWinLAMP400:
     Return
@@ -1278,7 +1278,8 @@ Section "Main" SectionMain
       FileOpen $9 python_env.bat w ; Opens a Empty File and fills it  
   
 	  FileWrite $9 '@echo off$\r$\n'
-      FileWrite $9 'SET PATH=$R0;$PythonHome;$PythonHome\Scripts;$GDALHome$\r$\n'
+      FileWrite $9 'SET GEONODE_PATHEXT=$PythonHome;$PythonHome\Scripts;$GDALHome$\r$\n'
+      FileWrite $9 'SET PATH=%GEONODE_PATHEXT%;$R0$\r$\n'
 	  FileWrite $9 'SET GDAL_HOME=${GDAL_HOME}$\r$\n'
 	  FileWrite $9 'SET GDAL_LIBRARY_PATH=${GDAL_HOME}\gdal111.dll$\r$\n'
 	  FileWrite $9 'SET GEOS_LIBRARY_PATH=${GDAL_HOME}\geos_c.dll$\r$\n'
@@ -1361,7 +1362,7 @@ Section "Main" SectionMain
 
     File "${WINLAMP_EXE}"
 
-    ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port /D=$INSTDIR"
+    ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER="$INSTDIR\${GEONODE_FOLDER}" /D=$INSTDIR"
 
     ExecWait '$INSTDIR\${GEONODE_FOLDER}\python_env.bat' ; restart apache service  
     ExecWait '$INSTDIR\Apache2\bin\Apache.exe -k restart -n "Apache2"' ; restart apache service  

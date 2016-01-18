@@ -52,6 +52,10 @@ Function .onInit
   ClearErrors
   ${GetOptions} $R0 -GEOSERVER-PORT= $3
   
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 -GEONODE-FOLDER= $4
+  
   ; initialize installoptions file
   InitPluginsDir
   File /oname=$TEMP\apacheconfig.ini "WinLAMP.GeoNode\Apache2\install\apacheconfig.ini"
@@ -92,17 +96,12 @@ Function ValidateConfig
     MessageBox MB_ICONEXCLAMATION|MB_OK "Please enter a Server Port"
     Abort
 
-  ;Push $R0
-  ;${GetParameters} $R0
-  ;ClearErrors
-  ;${GetOptions} $R0 -GEOSERVER-PORT= $3
   StrCmp $3 "" +1 +5
 	ReadINIStr $3 "$TEMP\apacheconfig.ini" "Field 12" "State"
 	StrCmp $3 "" +1 +3
 		MessageBox MB_ICONEXCLAMATION|MB_OK "Please enter a GeoServer Port"
 		Abort
 
-  ;Pop $R0
 FunctionEnd
 
 
@@ -164,7 +163,7 @@ Section "!Apache2 + PHP5"
   SetOutPath          '$INSTDIR\Apache2\install'
   ExecWait            '$INSTDIR\Apache2\install\perl \
                       "$INSTDIR\Apache2\install\updateconfs.pl" \
-                      "$INSTDIR\Apache2" "$0" "$1" "$2" "$3" "$INSTDIR" "$WINDIR"'
+                      "$INSTDIR\Apache2" "$0" "$1" "$2" "$3" "$4" "$WINDIR"'
 
   ; install Apache as service
   ExecWait            '$INSTDIR\Apache2\bin\Apache.exe -k install -n "Apache2" -d "$INSTDIR\Apache2"'
