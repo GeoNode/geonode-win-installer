@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>WinLAMP v.4.0 Configuration Help</title>
+</head>
+<!-- Background white, links blue (unvisited), navy (visited), red
+(active) -->
+<body bgcolor="#FFFFFF" text="#000000" link="#0000FF"
+vlink="#000080" alink="#FF0000">
+
+<blockquote>
+
+<a href="http://winlamp.sourceforge.net/"><img border="0" src="winlamp.jpg" align="right" alt="WinLAMP logo" vspace="20" hspace="20"></a>
+
+<h2>WinLAMP config help</h2>
+
+To edit the config files, use the Start Menu shortcuts: <br>
+
+<i>Start | Programs | WinLAMP | Configure | Edit conf file</i>.
+
+<br><br>
+
+Following are the CONFIG options which may be customized by WinLAMP. To adjust
+them, open up the file, search for the keyword, and modify it. 
+Then save your file and restart Apache for the settings to take effect.
+
+<br>
+
+<h2>Apache httpd.conf</h2>
+<ul>
+  <li><b>ServerName</b> (WinLAMP defaults to 'localhost' but if you're using a 
+  production server, you might change this to the actual machine 
+  name. Find it by right-clicking "My Computer", selecting 
+  'Properties' and viewing 'Computer Name').
+  <li><b>DocumentRoot</b> (WinLAMP defaults to C:\Apache2\htdocs)
+  <li><b>Listen</b> (WinLAMP defaults to port 80. This is the port Apache will listen on.)
+  <li><b>AllowOverride</b> (WinLAMP defaults to 'All').
+</ul>
+
+<h2>PHP php.ini</h2>
+<ul>
+<li><b>register_globals</b> (Back in the old days, this defaulted to "On." Nowadays, 
+for security, this defaults to "Off". Some developers need it to be "On" 
+for legacy code. If it is Off, you need to refer to form variables using
+the syntax <nobr><i>$_REQUEST['variablename']</i></nobr> instead of simply <i>$variablename</i>.)
+<li><b>magic_quotes_gpc</b> (Leave it OFF. It's better to learn how to manually tweak your data than to let magic complicate things.)
+<li><b>session.save_path</b> (WinLAMP php temp directory defaults to Apache2/modules/php/tmp).
+</ul>
+
+<h2>phpMyAdmin config.inc.php</h2>
+<ul>
+  <li><b>user</b> (This is the admin username, 'root'.)
+  <li><b>password</b> (WinLAMP defaults to 'mysql')
+  <li><b>auth_type</b> (Authentication method -- config, http or cookie based. WinLAMP defaults to config.)
+</ul>
+
+<font color="red">Make sure you synchronize any user/pass changes in MySQL with phpMyAdmin.</font>
+
+<h2>Services</h2>
+
+<i>Apache and MySQL are installed as services, and designed to
+startup automatically when you log in. If you want to change them to start
+only when you tell them to, use the command lines. You only have to
+run these commands once:</i>
+
+<br>
+<ul>
+	<li><b>sc config Apache2 start= demand</b> (This will make it start only on demand. Note the space after the equal sign.)<br>
+  <li><b>sc config Apache2 start= auto</b> (This will make it start during boot, which is the default).<br>
+  <li><b>sc config mysql start= demand</b> (Same as above).<br>
+  <li><b>sc config mysql start= auto</b> (Same as above).<br>
+  <br>
+  <li><b>c:\apache2\bin\apache -k install -n "Apache2"</b> (Used to install Apache as a service).
+  <li><b>net stop Apache2</b> (This will stop the service; do this before uninstall. Same effect as '-k stop' described below).
+  <li><b>c:\apache2\bin\apache -k uninstall -n "Apache2"</b> (Used to uninstall Apache). <br>
+  <br>
+  <li><b>Apache -n "Apache2" -k start</b> (Start Apache as a service-- must be installed beforehand, as described above).
+  <li><b>Apache -k stop</b> (Gracefully stop Apache).
+  <li><b>Apache -k restart</b> (Graceful restart of Apache).
+</ul>
+
+<br><br><br><br>
+
+<div align="center"><img src="apache_pb.gif" alt="" /></div>
+
+</blockquote>
+
+</body>
+</html>
+
