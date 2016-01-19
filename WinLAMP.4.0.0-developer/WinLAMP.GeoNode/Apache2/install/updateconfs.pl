@@ -55,7 +55,7 @@ print "\n $filein \n $fileout \n";
 open (FILE, $filein) || die "Cannot read from $filein";
 open (TMP, ">$fileout") || die "Cannot write to $fileout\n";
 while (<FILE>) {
-	s/C:\/GeoNode-2.4\/geonode-2.4/$GEONODEPATH/gi;
+	s/C:\/GeoNode-2.4/$GEONODEPATH/gi;
     s/8080/$GEOSERVERPORT/gi;
 	print TMP;
 }
