@@ -1152,6 +1152,9 @@ FunctionEnd
 Function Tomcat7MessageBox
   ;MessageBox MB_YESNO "Install Tomcat7?" /SD IDYES IDNO endTomcat7
   
+  ExecWait '$INSTDIR\${TOMCAT_DIRNAME}\bin\tomcat7.exe //DS//Tomcat7' ; remove apache tomcat service
+  ExecWait '$SYSDIR\sc delete "Tomcat7"' ; remove tomcat service
+    
   SetOutPath $INSTDIR
   
   File ${TOMCAT_ZIP}
@@ -1473,20 +1476,6 @@ Section "Main" SectionMain
     ; Run virtualenv setup script
     ExecWait 'virtualenv_setup.bat' ; run virtualenv setup
   
-	; Import Default Layers
-	  ; Write import layers file
-      Delete "import_layers.bat"
-      FileOpen $9 import_layers.bat w ; Opens a Empty File and fills it  
-    
-	  FileWrite $9 '@echo off$\r$\n'
-      FileWrite $9 'call python_env.bat$\r$\n'
-      FileWrite $9 'virtualenv .$\r$\n'
-	  FileWrite $9 'call Scripts\activate.bat$\r$\n'
-	  FileWrite $9 'python manage.py importlayers -v 3 "$INSTDIR\${GEONODE_FOLDER}\Lib\site-packages\gisdata\data\good\vector"$\r$\n'
-	  
-	  FileClose $9 ; Closes the file
-      
-    ExecWait 'import_layers.bat' ; run import layers
   ; -------------------------------------  GEOSERVER SECTION
   ; New users.properties file is created here
   StrCmp $IsExisting 1 NoWriteCreds WriteCreds
@@ -1510,6 +1499,18 @@ Section "Main" SectionMain
   
   NoWriteCreds:
   
+  ; -------------------------------------  APACHE2 SECTION
+  SetOutPath $INSTDIR
+
+    File "${WINLAMP_EXE}"
+
+    ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER=$\"$INSTDIR\${GEONODE_FOLDER}$\" /D=$INSTDIR"
+
+    ExecWait '$INSTDIR\${GEONODE_FOLDER}\python_env.bat' ; restart apache service  
+    ExecWait '$INSTDIR\Apache2\bin\Apache.exe -k restart -n "Apache2"' ; restart apache service  
+	ExecWait '$SYSDIR\net start Apache2' ; start apache service
+    
+  ; -------------------------------------  APACHE TOMCAT SECTION
   SetOutPath "$INSTDIR\${TOMCAT_DIRNAME}\bin"
 
     Delete "setenv.bat"
@@ -1544,25 +1545,12 @@ Section "Main" SectionMain
     FileWrite $9 'set TOMCAT_SERVICE_OPTS=-Duser.timezone=GMT;-Dport.http.nonssl=$Port;-XX:MaxPermSize=128m;-XX:PermSize=64m;-XX:NewSize=48m;-XX:+DisableExplicitGC;-XX:+UseConcMarkSweepGC;-XX:+UseParNewGC;-XX:+UseNUMA;-XX:+CMSParallelRemarkEnabled;-XX:MaxGCPauseMillis=500;-XX:+UseAdaptiveGCBoundary;-XX:-UseGCOverheadLimit;-XX:SoftRefLRUPolicyMSPerMB=36000;-XX:+UseLargePages;-XX:+HeapDumpOnOutOfMemoryError;-XX:+CMSIncrementalMode;-DGEOSERVER_DATA_DIR=%GEOSERVER_DATA_DIR%$\r$\n'
 
 	FileClose $9 ; Closes the file
-      
-	ExecWait '$INSTDIR\${TOMCAT_DIRNAME}\bin\tomcat7.exe //DS//Tomcat7' ; remove apache tomcat service
-	ExecWait '$SYSDIR\sc delete "Tomcat7"' ; remove tomcat service
+
     ExecWait '$INSTDIR\${TOMCAT_DIRNAME}\bin\service.bat install' ; install apache tomcat service
 	ExecWait '$SYSDIR\net start Tomcat7' ; start apache tomcat service
 
-  ; -------------------------------------  APACHE2 SECTION
-    SetOutPath $INSTDIR
-
-    File "${WINLAMP_EXE}"
-
-    ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER=$\"$INSTDIR\${GEONODE_FOLDER}$\" /D=$INSTDIR"
-
-    ExecWait '$INSTDIR\${GEONODE_FOLDER}\python_env.bat' ; restart apache service  
-    ExecWait '$INSTDIR\Apache2\bin\Apache.exe -k restart -n "Apache2"' ; restart apache service  
-	ExecWait '$SYSDIR\net start Apache2' ; start apache service
-  
   ; -------------------------------------  GEOSERVER SECTION
-    SetOutPath $INSTDIR\${GEONODE_FOLDER}
+  SetOutPath $INSTDIR\${GEONODE_FOLDER}
       
     AccessControl::GrantOnFile "$INSTDIR\" "(S-1-5-32-545)" "FullAccess"
     AccessControl::GrantOnFile "$INSTDIR\${GEONODE_FOLDER}" "(S-1-5-32-545)" "FullAccess"
@@ -1579,7 +1567,22 @@ Section "Main" SectionMain
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GeoNode VirtualEnv Setup.lnk" "$INSTDIR\${GEONODE_FOLDER}\virtualenv_setup.bat" \
                    "" "$INSTDIR\maintenance.ico" 0
     
-  
+
+  ; -------------------------------------  Import Default Layers
+	  ; Write import layers file
+      Delete "import_layers.bat"
+      FileOpen $9 import_layers.bat w ; Opens a Empty File and fills it  
+    
+	  FileWrite $9 '@echo off$\r$\n'
+      FileWrite $9 'call python_env.bat$\r$\n'
+      FileWrite $9 'virtualenv .$\r$\n'
+	  FileWrite $9 'call Scripts\activate.bat$\r$\n'
+	  FileWrite $9 'python manage.py importlayers -v 3 "$INSTDIR\${GEONODE_FOLDER}\Lib\site-packages\gisdata\data\good\vector"$\r$\n'
+	  
+	  FileClose $9 ; Closes the file
+      
+    ExecWait 'import_layers.bat' ; run import layers
+
   !insertmacro MUI_STARTMENU_WRITE_END
   
   endInstall:
