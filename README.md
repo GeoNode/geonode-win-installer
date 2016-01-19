@@ -14,4 +14,10 @@ In order to compile the installer:
 
 4. Download "data.zip" from http://build.geonode.org/geoserver/latest/data.zip
 
-5. Compile "GeoNode-install.nsi" with NSIS
+5. Build "postgis-pg84-setup-1.5.4-2.exe"; Compile with NSIS the file "postgis-pg84-1.5.4-installersrc/win32inst/postgis.nsi"
+   Move the "postgis-pg84-setup-1.5.4-2.exe" into the GeoNode installer root dir
+
+6. Build "WinLAMP.4.0.0-geonode.exe"; Compile with NSIS the file "WinLAMP.4.0.0-developer/WinLAMP.4.0.0-geonode.nsi"
+   Move the "WinLAMP.4.0.0-geonode.exe" into the GeoNode installer root dir
+
+7. Compile "GeoNode-install.nsi" with NSIS

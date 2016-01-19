@@ -1,0 +1,157 @@
+2010-02-15 Leo Hsu and Regina Obe <lr@pcorp.us>  Add in logic to prompt for overwriting plugin.ini for PgAdminIII
+	may need to take this out later once PgAdmin III allows for additional plugins.ini
+	
+:
+: Also put links to PostGIS website on startup menu for online help and support
+2007-10-10  Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
+
+	* Rewrite installer for PostgreSQL 8.3 StackBuilder including:
+	  - Check exit codes rather than stdout
+	  - Manage paths from pg_config rather than hardcoding
+
+	* Pick up default installation path, along with database
+	superuser and default port from the registry
+
+	* Change registry paths under HKLM to make the installer
+	compatible with StackBuilder
+
+[lots of work by Mark Cave-Ayland]
+
+
+2004-09-10  Steffen Macke <sdteffen@web.de>
+
+	* postgis.nsi:
+	* build.xml:
+	* NEWS: updated for 0.9.0 release
+	
+2004-08-24  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* packaging number is 2; fixed postgis.sql loading (bug #1015071)
+
+2004-08-18  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* postgis.nsi: updated version number to 0.8.2+cvs
+
+2004-08-17  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* postgis.nsi: added proper title and subtitle to custom page
+	
+2004-08-12  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* NEWS:
+	* INSTALL:
+	* postgis.ini:
+	* postgis.nsi: Updated for Native Windows PostgreSQL 8.0-beta1, 
+	PostGIS 0.8.2; including documentation 
+	
+2004-07-15  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* postgis.nsi:
+	* pathmanipulation.nsh: trying to skip reboot when adding c:\cygwin to the
+	PATH; packaging number is 2 now; not functional yet (PATH is added
+	to local user rather than the SYSTEM PATH).
+
+2003-11-25  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* NEWS: updated for 0.8.0-1 release
+	* install-postmaster.sh: fixing access rights for 
+	/var/log/postmaster_init.log
+	* uninstall-postmaster.sh: removing /tmp/cygipc2_0
+	* postgis.nsi: upgrade to NSIS 2.0.4 b4; updated for PostGIS 0.8.0;
+	added GEOS 1.0.0; new icons
+
+2003-11-16  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* NEWS: updated for 0.7.5-14 release
+	* uninstall-postmaster.sh:
+	* install-postmaster.sh:
+	* elephant.bmp:
+	* postmaster_init.sh:
+	* postgis.nsi: added uninstallation, elephant header, new password 
+
+2003-11-15  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* install-postmaster.sh: fixed error redirection
+
+2003-11-10  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* pg_hba.conf: added connection setting for bmfo
+	* postgis.nsi: packaging number is 14 now
+
+2003-10-26  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* postmaster_init.sh: now logging the removal of postmaster.pid
+
+2003-10-23  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* install-postmaster.sh:
+	* postgis.nsi:
+	* postmaster_init.sh: new package number 13, adds a new service
+	"postmaster_init" that runs ipclean and deletes postmaster.pid if
+	necessary
+
+2003-09-25  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* install-ipc.sh:
+	* install-postmaster.sh:
+	* postgis.nsi: updated installation for PostgreSQL 7.3.4-2, cygipc-2.0
+	* no_password_expiry.vbs: added script to set the password-never-expires
+	flag of a user
+
+2003-09-05  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* postgis.nsi: updated packaging number to 11; installing pg_hba.conf 
+	now
+	* pg_hba.conf: added default configuration for DCMMS
+
+2003-07-03  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* create_dcmms.sh: added #!/bin/bash in the first line
+
+2003-06-30  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* postgis.nsi:
+	* INSTALL:
+	* NEWS:
+	* install-postmaster.sh:
+	* install-ipc.sh:
+	* create-dcmms.sh: more tests and better environment settings, requiring
+	reboot when necessary; successfully tested on virgin Window XP system
+
+2003-06-29  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* install-postmaster.sh: added test for running services and proper 
+	Cygwin installation; c:\cygwin\bin will be added to system path if 
+	required - needs testing
+
+2003-06-29  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* create_dcmms.sh:
+	* install-postmaster.sh:
+	* install-ipc.sh:
+	* postgis.nsi: further improvements, tested on a virgin Windows XP
+	installation - system path still needs to be fixed; better error
+	handling is necessary
+
+2003-06-28  Maher Karim <Maher_Karim@dorsch.com.jo>
+
+	* delete-dcmms.sh: new file to delete the complete
+	DCMMS-PostGIS setup (including data!!!)
+
+2003-06-28  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* create_dcmms.sh:
+	* install-postmaster.sh:
+	* install-ipc.sh:
+	* postgis.nsi: added ntrights, database creation and initialization
+	is functional - installer should work now.
+	* init_dcmms.sh: removed
+	* INSTALL: updated information on installer building
+
+2003-06-27  Steffen Macke <Steffen_Macke@dorsch.com.jo>
+
+	* create_dcmms.sh:
+	* init_dcmms.sh:
+	* install-postmaster.sh:
+	* postgis.nsi: added IPC, postmaster service installation and 
+	sample database creation; not functional yet

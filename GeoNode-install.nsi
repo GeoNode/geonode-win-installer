@@ -24,6 +24,10 @@ SetCompress         auto
 !define GEONODE_FOLDER "geonode-2.4.x"
 !define GEOSERVER_DATA_ZIP "data.zip"
 !define PYTHON27_MSI "python-2.7.10.msi"
+!define POSTGRESQL_EXE "postgresql-8.4.22-1-windows.exe"
+!define POSTGIS_EXE "postgis-pg84-setup-1.5.4-2.exe"
+!define POSTGRESQL_UNINSTALL_EXE "uninstall-postgresql.exe"
+!define POSTGIS_UNINSTALL_EXE "uninstall-postgis-pg84-1.5.4-2.exe"
 !define WINLAMP_EXE "WinLAMP.4.0.0-geonode.exe"
 !define TOMCAT_ZIP "apache-tomcat-7.0.65-windows-x86.zip"
 !define TOMCAT_DIRNAME "apache-tomcat-7.0.65"
@@ -131,6 +135,12 @@ Page custom Python27MessageBox
 ;Page custom Python PythonLeave
 Page custom GDAL                                              ; Install GDAL
 
+Page custom PostgreSQL                                        ; Install PostgreSQL DB
+Page custom PostgreSQLMessageBox
+
+Page custom PostGIS                                           ; Install PostGIS DB spatial extensions
+Page custom PostGISMessageBox
+
 Page custom Ready                                             ; Summary page
 Page custom Tomcat7
 
@@ -165,6 +175,10 @@ LangString TEXT_JRE_TITLE ${LANG_ENGLISH} "Java Runtime Environment"
 LangString TEXT_JRE_SUBTITLE ${LANG_ENGLISH} "Java Runtime Environment path selection"
 LangString TEXT_LAMP_TITLE ${LANG_ENGLISH} "WinLAMP 4.0.0"
 LangString TEXT_LAMP_SUBTITLE ${LANG_ENGLISH} "WinLAMP Installation"
+LangString TEXT_PSQL_TITLE ${LANG_ENGLISH} "PostgreSQL 8.4.22"
+LangString TEXT_PSQL_SUBTITLE ${LANG_ENGLISH} "PostgreSQL Installation"
+LangString TEXT_PGIS_TITLE ${LANG_ENGLISH} "PostGIS 1.5.5"
+LangString TEXT_PGIS_SUBTITLE ${LANG_ENGLISH} "PostGIS Installation"
 LangString TEXT_DATADIR_TITLE ${LANG_ENGLISH} "GeoServer Data Directory"
 LangString TEXT_DATADIR_SUBTITLE ${LANG_ENGLISH} "GeoServer Data Directory path selection"
 LangString TEXT_MEM_TITLE ${LANG_ENGLISH} "GeoServer Heap Memory"
@@ -568,6 +582,113 @@ FunctionEnd
 
 ;Function InstallPython
 ;FunctionEnd
+
+######################################################################
+# PostgreSQL DB + PostGIS
+######################################################################
+Function PostgreSQL
+
+  !insertmacro MUI_HEADER_TEXT "$(TEXT_PSQL_TITLE)" "$(TEXT_PSQL_SUBTITLE)"
+
+  nsDialogs::Create 1018
+  ; ${NSD_Create*} x y width height text
+
+  ${NSD_CreateLabel} 0 0 100% 64u "You need PostgreSQL with PostGIS DB installed on your system.\
+                                   $\r$\n$\r$\n$\r$\n$\r$\nThis step will install PostgreSQL 8.4.22 \
+                                   on your system."
+  
+  nsDialogs::Show
+  #Call PostgreSQLMessageBox
+  
+FunctionEnd
+
+Function PostgreSQLMessageBox
+
+  #MessageBox MB_YESNO "Install PostgreSQL 8.4.22?" /SD IDYES IDNO endPSQL324
+  
+  File "${POSTGRESQL_EXE}"
+  ExecWait '${POSTGRESQL_EXE} --mode unattended --unattendedmodeui minimal \
+   --prefix "$INSTDIR\postgres" --datadir "$INSTDIR\postgres\data" \ 
+   --install_runtimes 1 --install_plpgsql 1 --create_shortcuts 1'
+  endPSQL324:
+
+  ;pg_hba security conf file
+  Delete "$INSTDIR\postgres\data\pg_hba.conf"
+  FileOpen $R8 "$INSTDIR\postgres\data\pg_hba.conf" w
+  FileWrite $R8 "# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD$\r$\n"
+  FileWrite $R8 "# IPv4 local connections:$\r$\n"
+  FileWrite $R8 "host    all         all         127.0.0.1/32          trust$\r$\n"
+  FileWrite $R8 "# IPv6 local connections:$\r$\n"
+  FileWrite $R8 "host    all         all         ::1/128               trust$\r$\n"
+  FileClose $R8
+  
+  SimpleSC::RestartService "postgresql-8.4"
+FunctionEnd
+
+Function PostGIS
+
+  !insertmacro MUI_HEADER_TEXT "$(TEXT_PGIS_TITLE)" "$(TEXT_PGIS_SUBTITLE)"
+
+  nsDialogs::Create 1018
+  ; ${NSD_Create*} x y width height text
+
+  ${NSD_CreateLabel} 0 0 100% 64u "PostGIS is necessary for the system to work and must be installed before DB initialization.\
+                                   $\r$\n$\r$\n$\r$\n$\r$\nThis step will install PostGIS 1.5.4 \
+                                   on your system."
+  
+  nsDialogs::Show
+  #Call PostGISMessageBox
+  
+FunctionEnd
+
+Function PostGISMessageBox
+
+  #MessageBox MB_YESNO "Install PostGIS 1.5.4?" /SD IDYES IDNO endPGIS324
+  
+	File "${POSTGIS_EXE}"
+	ExecWait '${POSTGIS_EXE} /USERNAME=postgres /PASSWORD=postgres /DATABASE=template_postgis /O /D=$INSTDIR\postgres'
+
+  	; By setting the output path to the temporary directory, we force NSIS to make the directory exist. This makes debugging the installer so much easier! Note that the file list in inputfile.nsh overrides this value anyway...
+	SetOutPath "${TEMPDIR}"
+
+	; Set the shell context
+	SetShellVarContext all
+
+	; Checks whether installation folder is the PostgreSQL installation folder
+	IfFileExists "$INSTDIR\postgres\bin\postgres.exe" postgres_available
+	MessageBox MB_OK|MB_ICONSTOP "Could not recognize PostgreSQL installation."
+	Abort "Could not recognize PostgreSQL installation."
+
+	postgres_available:		
+		FileOpen $2 "${TEMPDIR}\create_base_db.bat" "w"
+		FileWrite $2 "set PGPASSWORD=postgres$\r$\n"
+		FileWrite $2 "set PGPORT=5432$\r$\n"
+		FileWrite $2 '"$INSTDIR\postgres\bin\dropdb.exe" -U postgres geonode$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\dropdb.exe" -U postgres geonode_imports$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\dropuser.exe" -U postgres geonode$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\createuser.exe" -U postgres -d -l -S -R -w geonode$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\createdb.exe" -U postgres -O geonode geonode$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\createdb.exe" -U postgres -O geonode geonode_imports$\r$\n'
+        FileWrite $2 "$\"$INSTDIR\postgres\bin\psql.exe$\" -U postgres -d geonode_imports -c $\"ALTER USER geonode WITH PASSWORD 'geonode';$\"$\r$\n"
+        ;FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -d geonode_imports -c "create extension postgis;"$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\createlang.exe" -U postgres plpgsql geonode_imports$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -c "UPDATE pg_database SET datistemplate=true WHERE datname=$\'geonode_imports$\'" geonode_imports$\r$\n'
+		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-1.5\postgis.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
+		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-1.5\spatial_ref_sys.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
+		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-1.5\postgis_comments.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -d geonode_imports -c "grant all on geometry_columns to public;"$\r$\n'
+        FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -d geonode_imports -c "grant all on geography_columns to public;"$\r$\n'
+		FileClose $2
+
+		; Execute create_postgis_db.bat
+		DetailPrint "Creating template database..."
+		ExecWait '"$SYSDIR\cmd.exe" /c "${TEMPDIR}\create_base_db.bat"'
+		Pop $R9
+
+	endPGIS324:
+		Return
+			
+FunctionEnd
 
 ######################################################################
 # GEOSERVER_DATA_DIR
@@ -993,7 +1114,7 @@ Function WinLAMPMessageBox
 
   File "${WINLAMP_EXE}"
 
-  ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER="$INSTDIR\${GEONODE_FOLDER}" /D=$INSTDIR"
+  ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER=$\"$INSTDIR\${GEONODE_FOLDER}$\" /D=$INSTDIR"
   
   endWinLAMP400:
     Return
@@ -1216,7 +1337,54 @@ Section "Main" SectionMain
     Delete "geonode\local_settings.py"
     FileOpen $9 geonode\local_settings.py w ; Opens a Empty File and fills it  
 
-	FileWrite $9 'import os$\r$\n'
+    # Development DB
+	;FileWrite $9 'import os$\r$\n'
+	;FileWrite $9 '$\r$\n'
+	;FileWrite $9 'PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))$\r$\n'
+	;FileWrite $9 '$\r$\n'
+	;FileWrite $9 'SITEURL = "http://localhost:8000/"$\r$\n'
+	;FileWrite $9 '$\r$\n'
+	;FileWrite $9 'DATABASES = {$\r$\n'
+	;FileWrite $9 '    "default": {$\r$\n'
+	;FileWrite $9 '        "ENGINE": "django.db.backends.sqlite3",$\r$\n'
+	;FileWrite $9 '        "NAME": os.path.join(PROJECT_ROOT, "development.db"),$\r$\n'
+	;FileWrite $9 '    },$\r$\n'
+	;FileWrite $9 '    # vector datastore for uploads$\r$\n'
+	;FileWrite $9 '    # "datastore" : {$\r$\n'
+	;FileWrite $9 '    #    "ENGINE": "django.contrib.gis.db.backends.postgis",$\r$\n'
+	;FileWrite $9 '    #    "NAME": "",$\r$\n'
+	;FileWrite $9 '    #    "USER" : "",$\r$\n'
+	;FileWrite $9 '    #    "PASSWORD" : "",$\r$\n'
+	;FileWrite $9 '    #    "HOST" : "",$\r$\n'
+	;FileWrite $9 '    #    "PORT" : "",$\r$\n'
+	;FileWrite $9 '    # }$\r$\n'
+	;FileWrite $9 '}$\r$\n'
+	;FileWrite $9 '$\r$\n'
+	;FileWrite $9 '# OGC (WMS/WFS/WCS) Server Settings$\r$\n'
+	;FileWrite $9 '# OGC (WMS/WFS/WCS) Server Settings$\r$\n'
+	;FileWrite $9 'OGC_SERVER = {$\r$\n'
+	;FileWrite $9 '    "default": {$\r$\n'
+	;FileWrite $9 '        "BACKEND": "geonode.geoserver",$\r$\n'
+	;FileWrite $9 '        "LOCATION": "http://localhost:$Port/geoserver/",$\r$\n'
+	;FileWrite $9 '        "PUBLIC_LOCATION": "http://localhost/geoserver/",$\r$\n'
+	;FileWrite $9 '        "USER": "$GSUser",$\r$\n'
+	;FileWrite $9 '        "PASSWORD": "$GSPass",$\r$\n'
+	;FileWrite $9 '        "MAPFISH_PRINT_ENABLED": True,$\r$\n'
+	;FileWrite $9 '        "PRINT_NG_ENABLED": True,$\r$\n'
+	;FileWrite $9 '        "GEONODE_SECURITY_ENABLED": True,$\r$\n'
+	;FileWrite $9 '        "GEOGIG_ENABLED": False,$\r$\n'
+	;FileWrite $9 '        "WMST_ENABLED": False,$\r$\n'
+	;FileWrite $9 '        "BACKEND_WRITE_ENABLED": True,$\r$\n'
+	;FileWrite $9 '        "WPS_ENABLED": False,$\r$\n'
+	;FileWrite $9 '        "LOG_FILE": "%s/geoserver/data/logs/geoserver.log" % os.path.abspath(os.path.join(PROJECT_ROOT, os.pardir)),$\r$\n'
+	;FileWrite $9 '        # Set to name of database in DATABASES dictionary to enable$\r$\n'
+	;FileWrite $9 '        "DATASTORE": "",  # "datastore",$\r$\n'
+	;FileWrite $9 '        "TIMEOUT": 10  # number of seconds to allow for HTTP requests$\r$\n'
+	;FileWrite $9 '    }$\r$\n'
+	;FileWrite $9 '}$\r$\n'
+    
+    # Production DB
+    FileWrite $9 'import os$\r$\n'
 	FileWrite $9 '$\r$\n'
 	FileWrite $9 'PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))$\r$\n'
 	FileWrite $9 '$\r$\n'
@@ -1224,18 +1392,20 @@ Section "Main" SectionMain
 	FileWrite $9 '$\r$\n'
 	FileWrite $9 'DATABASES = {$\r$\n'
 	FileWrite $9 '    "default": {$\r$\n'
-	FileWrite $9 '        "ENGINE": "django.db.backends.sqlite3",$\r$\n'
-	FileWrite $9 '        "NAME": os.path.join(PROJECT_ROOT, "development.db"),$\r$\n'
+	FileWrite $9 '        "ENGINE": "django.db.backends.postgresql_psycopg2",$\r$\n'
+	FileWrite $9 '        "NAME": "geonode",$\r$\n'
+	FileWrite $9 '        "USER": "geonode",$\r$\n'
+	FileWrite $9 '        "PASSWORD": "geonode",$\r$\n'
 	FileWrite $9 '    },$\r$\n'
 	FileWrite $9 '    # vector datastore for uploads$\r$\n'
-	FileWrite $9 '    # "datastore" : {$\r$\n'
-	FileWrite $9 '    #    "ENGINE": "django.contrib.gis.db.backends.postgis",$\r$\n'
-	FileWrite $9 '    #    "NAME": "",$\r$\n'
-	FileWrite $9 '    #    "USER" : "",$\r$\n'
-	FileWrite $9 '    #    "PASSWORD" : "",$\r$\n'
-	FileWrite $9 '    #    "HOST" : "",$\r$\n'
-	FileWrite $9 '    #    "PORT" : "",$\r$\n'
-	FileWrite $9 '    # }$\r$\n'
+	FileWrite $9 '    "datastore" : {$\r$\n'
+	FileWrite $9 '       "ENGINE": "django.contrib.gis.db.backends.postgis",$\r$\n'
+	FileWrite $9 '       "NAME": "geonode_imports",$\r$\n'
+	FileWrite $9 '       "USER" : "geonode",$\r$\n'
+	FileWrite $9 '       "PASSWORD" : "geonode",$\r$\n'
+	FileWrite $9 '       "HOST" : "localhost",$\r$\n'
+	FileWrite $9 '       "PORT" : "5432",$\r$\n'
+	FileWrite $9 '    }$\r$\n'
 	FileWrite $9 '}$\r$\n'
 	FileWrite $9 '$\r$\n'
 	FileWrite $9 '# OGC (WMS/WFS/WCS) Server Settings$\r$\n'
@@ -1256,7 +1426,7 @@ Section "Main" SectionMain
 	FileWrite $9 '        "WPS_ENABLED": False,$\r$\n'
 	FileWrite $9 '        "LOG_FILE": "%s/geoserver/data/logs/geoserver.log" % os.path.abspath(os.path.join(PROJECT_ROOT, os.pardir)),$\r$\n'
 	FileWrite $9 '        # Set to name of database in DATABASES dictionary to enable$\r$\n'
-	FileWrite $9 '        "DATASTORE": "",  # "datastore",$\r$\n'
+	FileWrite $9 '        "DATASTORE": "datastore",$\r$\n'
 	FileWrite $9 '        "TIMEOUT": 10  # number of seconds to allow for HTTP requests$\r$\n'
 	FileWrite $9 '    }$\r$\n'
 	FileWrite $9 '}$\r$\n'
@@ -1293,6 +1463,20 @@ Section "Main" SectionMain
     ; Run virtualenv setup script
     ExecWait 'virtualenv_setup.bat' ; run virtualenv setup
   
+	; Import Default Layers
+	  ; Write import layers file
+      Delete "import_layers.bat"
+      FileOpen $9 import_layers.bat w ; Opens a Empty File and fills it  
+    
+	  FileWrite $9 '@echo off$\r$\n'
+      FileWrite $9 'call python_env.bat$\r$\n'
+      FileWrite $9 'virtualenv .$\r$\n'
+	  FileWrite $9 'call Scripts\activate.bat$\r$\n'
+	  FileWrite $9 'python manage.py importlayers -v 3 "$INSTDIR\${GEONODE_FOLDER}\Lib\site-packages\gisdata\data\good\vector"$\r$\n'
+	  
+	  FileClose $9 ; Closes the file
+      
+    ExecWait 'import_layers.bat' ; run import layers
   ; -------------------------------------  GEOSERVER SECTION
   ; New users.properties file is created here
   StrCmp $IsExisting 1 NoWriteCreds WriteCreds
@@ -1362,7 +1546,7 @@ Section "Main" SectionMain
 
     File "${WINLAMP_EXE}"
 
-    ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER="$INSTDIR\${GEONODE_FOLDER}" /D=$INSTDIR"
+    ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER=$\"$INSTDIR\${GEONODE_FOLDER}$\" /D=$INSTDIR"
 
     ExecWait '$INSTDIR\${GEONODE_FOLDER}\python_env.bat' ; restart apache service  
     ExecWait '$INSTDIR\Apache2\bin\Apache.exe -k restart -n "Apache2"' ; restart apache service  
@@ -1453,6 +1637,11 @@ Section "Uninstall"
   ExecWait '"msiexec" /x "$INSTDIR\${VC_FOR_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   ExecWait '"msiexec" /x "$INSTDIR\${GDAL_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   ExecWait '"msiexec" /x "$INSTDIR\${PYTHON27_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
+  
+  ; Uninstall POstgreSQL and PostGIS
+  ExecWait "$INSTDIR\postgres\${POSTGIS_UNINSTALL_EXE}"
+  ExecWait "$INSTDIR\postgres\${POSTGRESQL_UNINSTALL_EXE}"
+  ExecWait '$SYSDIR\net user postgres /delete' ; stop apache tomcat service
   
   ;Delete files and dirs in installation folder
   Delete $INSTDIR\uninstall_GeoNode.exe

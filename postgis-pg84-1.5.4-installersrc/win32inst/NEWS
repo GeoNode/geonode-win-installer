@@ -1,0 +1,36 @@
+2010-09-27	Version 1.5.2-1, using PostGIS 1.5.2, GEOS 3.2.2, PROJ.4 4.6.1, LIBXML-2 2.7.6
+		PostgreSQL 9.0, PostgreSQL 8.4, PostgreSQL 8.3
+		:
+		:
+2010-03-11	Version 1.5.1-1, using PostGIS 1.5.1, GEOS 3.2.0, PROJ.4 4.6.1
+		PostgreSQL 8.4, PostgreSQL 8.3
+		:
+		:
+2010-02-17	Version 1.5.0-1, using PostGIS 1.5.0, GEOS 3.2.0, PROJ.4 4.6.1,
+		PostgreSQL 8.4
+		:
+		:
+2004-09-10	Version 0.9.0-1, using PostGIS 0.9.0, GEOS 2.0.0, PROJ.4 4.4.8,
+		PostgreSQL 8.0-beta1
+
+2004-08-12      Version 0.8.2-1, using Native Windows PostgreSQL 8.0-beta1
+		(available from http://pgfoundry.org/projects/pginstaller).
+		Added documentation.
+
+2003-11-25	Version 0.8.0-1, using PostgreSQL 7.4 and GEOS 1.0.0. Improved
+		uninstallation. New icons.
+
+2003-11-16	Version 0.7.5-14, uninstallation works now via "Add or Remove
+		Programs" from the Windows Control Panel. The password of the
+		postgres account is now Dcmms{1}
+
+2003-10-23	Version 0.7.5-13, added a new service "postmaster_init" that
+		deletes postmaster.pid and runs ipcclean if necessary. The 
+		postmaster service depends on postmaster_init. This fixes the
+		postmaster startup problems e.g. when the power was cut.
+
+2003-09-25	Version 0.7.5-12, updated for PostgreSQL 7.3.4-2 and cygipc-2.0
+
+2003-06-30 	Releasing version 0.7.5-9 for public testing
+		Should be possible to setup PostGIS 0.7.5 on top of simple
+		Cygwin Postgresql 7.3.3 installation.
