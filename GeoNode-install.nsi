@@ -241,6 +241,16 @@ Function JREInstallMessageBox
   
   StrCpy $JavaHome "$INSTDIR\jre"
   
+  ; write env vars
+  Push "JRE_HOME"
+  Call un.DeleteEnvVar
+  Push "JAVA_HOME"
+  Call un.DeleteEnvVar
+  
+  Push "JRE_HOME"
+  Push "$JavaHome"
+  call WriteEnvVar
+  
   endJREInstall7:
 	Return
 FunctionEnd
@@ -1534,12 +1544,11 @@ Section "Main" SectionMain
     FileWrite $9 'set TOMCAT_SERVICE_OPTS=-Duser.timezone=GMT;-Dport.http.nonssl=$Port;-XX:MaxPermSize=128m;-XX:PermSize=64m;-XX:NewSize=48m;-XX:+DisableExplicitGC;-XX:+UseConcMarkSweepGC;-XX:+UseParNewGC;-XX:+UseNUMA;-XX:+CMSParallelRemarkEnabled;-XX:MaxGCPauseMillis=500;-XX:+UseAdaptiveGCBoundary;-XX:-UseGCOverheadLimit;-XX:SoftRefLRUPolicyMSPerMB=36000;-XX:+UseLargePages;-XX:+HeapDumpOnOutOfMemoryError;-XX:+CMSIncrementalMode;-DGEOSERVER_DATA_DIR=%GEOSERVER_DATA_DIR%$\r$\n'
 
 	FileClose $9 ; Closes the file
-    
+      
 	ExecWait '$INSTDIR\${TOMCAT_DIRNAME}\bin\tomcat7.exe //DS//Tomcat7' ; remove apache tomcat service
 	ExecWait '$SYSDIR\sc delete "Tomcat7"' ; remove tomcat service
     ExecWait '$INSTDIR\${TOMCAT_DIRNAME}\bin\service.bat install' ; install apache tomcat service
 	ExecWait '$SYSDIR\net start Tomcat7' ; start apache tomcat service
-
 
   ; -------------------------------------  APACHE2 SECTION
     SetOutPath $INSTDIR
@@ -1670,7 +1679,9 @@ Section "Uninstall"
   Call un.DeleteEnvVar
   Push "GEONODE_PATHEXT"
   Call un.DeleteEnvVar
-
+  Push "JRE_HOME"
+  Call un.DeleteEnvVar
+  
   ; remove the path setting
   Push "%GEONODE_PATHEXT%"
   Call un.RemoveFromPath
