@@ -212,6 +212,31 @@ Function .onInit
 FunctionEnd
 
 ######################################################################
+# Env Var
+######################################################################
+Function WriteEnvVar
+  Pop $4
+  Pop $3
+  
+  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"  $3 $4
+  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+FunctionEnd
+
+Function DeleteEnvVar
+  Pop $4
+  
+  DeleteRegValue HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"  $4
+  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+FunctionEnd
+
+Function un.DeleteEnvVar
+  Pop $4
+  
+  DeleteRegValue HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"  $4
+  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+FunctionEnd
+
+######################################################################
 # JRE Installer
 ######################################################################
 Function JREInstall
@@ -243,9 +268,9 @@ Function JREInstallMessageBox
   
   ; write env vars
   Push "JRE_HOME"
-  Call un.DeleteEnvVar
+  Call DeleteEnvVar
   Push "JAVA_HOME"
-  Call un.DeleteEnvVar
+  Call DeleteEnvVar
   
   Push "JRE_HOME"
   Push "$JavaHome"
@@ -1293,24 +1318,6 @@ Function Ready
 FunctionEnd
 
 ######################################################################
-# Env Var
-######################################################################
-Function WriteEnvVar
-  Pop $4
-  Pop $3
-  
-  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"  $3 $4
-  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
-FunctionEnd
-
-Function un.DeleteEnvVar
-  Pop $4
-  
-  DeleteRegValue HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"  $4
-  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
-FunctionEnd
-
-######################################################################
 # MAIN SECTION
 ######################################################################
 ; The main install section
@@ -1546,7 +1553,7 @@ Section "Main" SectionMain
 
 	FileClose $9 ; Closes the file
 
-    ExecWait '$INSTDIR\${TOMCAT_DIRNAME}\bin\service.bat install' ; install apache tomcat service
+    ExecWait 'service.bat install' ; install apache tomcat service
 	ExecWait '$SYSDIR\net start Tomcat7' ; start apache tomcat service
 
   ; -------------------------------------  GEOSERVER SECTION
