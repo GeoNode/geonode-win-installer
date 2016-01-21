@@ -1515,7 +1515,7 @@ Section "Main" SectionMain
 
     ExecWait '$INSTDIR\${GEONODE_FOLDER}\python_env.bat' ; restart apache service  
     ExecWait '$SYSDIR\net stop was /y' ; stop World Wide Web Publishing service
-    ;ExecWait '$SYSDIR\sc config "W3SVC" start= disabled' ; disable World Wide Web Publishing service
+    ExecWait '$SYSDIR\sc config "W3SVC" start= disabled' ; disable World Wide Web Publishing service
     ExecWait '$INSTDIR\Apache2\bin\Apache.exe -k restart -n "Apache2"' ; restart apache service  
 	ExecWait '$SYSDIR\net start Apache2' ; start apache service
     
