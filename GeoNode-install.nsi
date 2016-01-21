@@ -1555,6 +1555,7 @@ Section "Main" SectionMain
 
 	FileClose $9 ; Closes the file
 
+    ExecWait 'setenv.bat' ; prepare environment for apache tomcat service
     ExecWait 'service.bat install' ; install apache tomcat service
 	ExecWait '$SYSDIR\net start Tomcat7' ; start apache tomcat service
 
