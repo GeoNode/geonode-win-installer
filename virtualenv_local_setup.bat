@@ -9,7 +9,7 @@ virtualenv .
 
 call Scripts\activate.bat
 
-pip install -e .
+rem pip install -e .
 
 paver sync
 python manage.py collectstatic

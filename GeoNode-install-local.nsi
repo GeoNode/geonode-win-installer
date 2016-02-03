@@ -468,12 +468,12 @@ Function Python27MessageBox
   ExecWait '"msiexec" /i "$INSTDIR\${PYTHON27_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   
   StrCpy $PythonInstalled 0
-  StrCpy $PythonHome "$INSTDIR\Python27"
+  StrCpy $PythonHome "$INSTDIR"
   StrCpy $GDALHome "${GDAL_HOME}"
   
   ; write env vars
   Push "GEONODE_PATHEXT"
-  Push "$PythonHome;$PythonHome\Scripts;$GDALHome"
+  Push "$PythonHome;$PythonHome\${GEONODE_FOLDER}\Scripts;$GDALHome"
   call WriteEnvVar
   
   ReadEnvStr $R0 "PATH"
@@ -598,7 +598,7 @@ Function PythonLeave
     Goto End
   ${Else}
     Push "GEONODE_PATHEXT"
-    Push "$PythonHome;$PythonHome\Scripts;$GDALHome"
+    Push "$PythonHome;$INSTDIR\${GEONODE_FOLDER}\Scripts;$GDALHome"
 	call WriteEnvVar
     
 	ReadEnvStr $R0 "PATH"
