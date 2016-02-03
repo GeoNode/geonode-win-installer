@@ -1634,6 +1634,16 @@ Section "Main" SectionMain
       
       ; create the uninstaller 
       WriteUninstaller $INSTDIR\uninstall_GeoNode.exe
+      
+     
+     ; ask for reboot
+     MessageBox MB_YESNO "Reboot is needed in order to finish the installation. Do you want to reboot now?" IDNO end
+
+     SetRebootFlag true
+
+     
+
+     end:
   
 SectionEnd
 
