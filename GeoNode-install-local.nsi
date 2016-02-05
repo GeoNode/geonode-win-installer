@@ -20,24 +20,68 @@ SetCompress         auto
 !define TEMPDIR "$TEMP\geonode_installer"
 
 !define JRE_EXE "jre-7u80-windows-i586.exe"
+
 !define GEONODE_ZIP "geonode-${VERSION}.zip"
 !define GEONODE_ENV_ZIP "env_geonode-${VERSION}.zip"
+
 !define GEONODE_FOLDER "geonode-${VERSION}"
 !define GEOSERVER_DATA_ZIP "data.zip"
-!define PYTHON27_MSI "python-2.7.10.msi"
+
 !define POSTGRESQL_EXE "postgresql-8.4.22-1-windows.exe"
 !define POSTGIS_EXE "postgis-pg84-setup-1.5.4-2.exe"
 !define POSTGRESQL_UNINSTALL_EXE "uninstall-postgresql.exe"
 !define POSTGIS_UNINSTALL_EXE "uninstall-postgis-pg84-1.5.4-2.exe"
+
 !define WINLAMP_EXE "WinLAMP.4.0.0-geonode.exe"
+
 !define TOMCAT_ZIP "apache-tomcat-7.0.65-windows-x86.zip"
 !define TOMCAT_DIRNAME "apache-tomcat-7.0.65"
+
+!define PYTHON27_MSI "python-2.7.10.msi"
 !define VC_FOR_PYTHON_MSI "VCForPython27.msi"
-!define GDAL_CORE_MSI "gdal-111-1800-core.msi"
 !define GDAL_PYTHON_MSI "GDAL-1.11.3.win32-py2.7.msi"
+
+!define GDAL_ZIP "GDAL.zip"
 !define GDAL_DLL "gdal111.dll"
 !define GEOS_DLL "geos_c.dll"
-!define GDAL_HOME "$PROGRAMFILES\GDAL"
+!define GDAL_HOME "$INSTDIR\GDAL"
+
+!define HKEY_CLASSES_ROOT        0x80000000
+!define HKEY_CURRENT_USER        0x80000001
+!define HKEY_LOCAL_MACHINE       0x80000002
+!define HKEY_USERS               0x80000003
+!define HKEY_PERFORMANCE_DATA    0x80000004
+!define HKEY_PERFORMANCE_TEXT    0x80000050
+!define HKEY_PERFORMANCE_NLSTEXT 0x80000060
+!define HKEY_CURRENT_CONFIG      0x80000005
+!define HKEY_DYN_DATA            0x80000006
+
+!define KEY_QUERY_VALUE          0x0001
+!define KEY_SET_VALUE            0x0002
+!define KEY_CREATE_SUB_KEY       0x0004
+!define KEY_ENUMERATE_SUB_KEYS   0x0008
+!define KEY_NOTIFY               0x0010
+!define KEY_CREATE_LINK          0x0020
+
+!define REG_NONE                 0
+!define REG_SZ                   1
+!define REG_EXPAND_SZ            2
+!define REG_BINARY               3
+!define REG_DWORD                4
+!define REG_DWORD_LITTLE_ENDIAN  4
+!define REG_DWORD_BIG_ENDIAN     5
+!define REG_LINK                 6
+!define REG_MULTI_SZ             7
+
+!define RegCreateKey             "Advapi32::RegCreateKeyA(i, t, *i) i"
+!define RegSetValueEx            "Advapi32::RegSetValueExA(i, t, i, i, i, i) i"
+!define RegCloseKey              "Advapi32::RegCloseKeyA(i) i"
+
+####### Edit this!
+!define ROOT_KEY                 "${HKEY_LOCAL_MACHINE}"
+!define SUB_KEY                  "SYSTEM\CurrentControlSet\Services\Apache2"
+!define VALUE                    "Environment"
+####### Stop editing
 
 ; Main Install settings
 Name "${APPNAMEANDVERSION}"
@@ -472,14 +516,14 @@ Function Python27MessageBox
   StrCpy $GDALHome "${GDAL_HOME}"
   
   ; write env vars
-  Push "GEONODE_PATHEXT"
-  Push "$PythonHome;$PythonHome\${GEONODE_FOLDER}\Scripts;$GDALHome"
-  call WriteEnvVar
+  #Push "GEONODE_PATHEXT"
+  #Push "$PythonHome;$PythonHome\${GEONODE_FOLDER}\Scripts;$GDALHome"
+  #call WriteEnvVar
   
-  ReadEnvStr $R0 "PATH"
-  Push "PATH"
-  Push "%GEONODE_PATHEXT%;$R0"
-  call WriteEnvVar
+  #ReadEnvStr $R0 "PATH"
+  #Push "PATH"
+  #Push "%GEONODE_PATHEXT%;$R0"
+  #call WriteEnvVar
     
   ; Call Python
   Goto End
@@ -1213,29 +1257,33 @@ Function GDAL
   ;MessageBox MB_YESNO "Install GDAL?" /SD IDYES IDNO endGDAL
 
   SetOutPath $INSTDIR
+  
+  File ${GDAL_ZIP}
+  
+  ZipDLL::extractall "${GDAL_ZIP}" ""
 
   ; Visual C++ compiler for python27
   File "${VC_FOR_PYTHON_MSI}"
   ExecWait '"msiexec" /i "$INSTDIR\${VC_FOR_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   
   ; GDAL core
-  File "${GDAL_CORE_MSI}"
-  ExecWait '"msiexec" /i "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
+  #File "${GDAL_CORE_MSI}"
+  #ExecWait '"msiexec" /i "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
 
   ; set Env Var GDAL_LIBRARY_PATH
-  Push "GDAL_HOME"
-  Push "${GDAL_HOME}"
-  call WriteEnvVar
+  #Push "GDAL_HOME"
+  #Push "${GDAL_HOME}"
+  #call WriteEnvVar
   
   ; set Env Var GDAL_LIBRARY_PATH
-  Push "GDAL_LIBRARY_PATH"
-  Push "${GDAL_HOME}\gdal111.dll"
-  call WriteEnvVar
+  #Push "GDAL_LIBRARY_PATH"
+  #Push "${GDAL_HOME}\gdal111.dll"
+  #call WriteEnvVar
   
   ; set Env Var GEOS_LIBRARY_PATH
-  Push "GEOS_LIBRARY_PATH"
-  Push "${GDAL_HOME}\geos_c.dll"
-  call WriteEnvVar
+  #Push "GEOS_LIBRARY_PATH"
+  #Push "${GDAL_HOME}\geos_c.dll"
+  #call WriteEnvVar
     
   ; GDAL Python Bindings
   File "${GDAL_PYTHON_MSI}"
@@ -1316,6 +1364,62 @@ Function Ready
 
   nsDialogs::Show
 
+FunctionEnd
+
+Function "ApacheRegWrite"
+  SetPluginUnload alwaysoff
+  ; Create a buffer for the multi_sz value
+  System::Call "*(&t${NSIS_MAX_STRLEN}) i.r1"
+  ; Open/create the registry key
+  System::Call "${RegCreateKey}(${ROOT_KEY}, '${SUB_KEY}', .r0) .r9"
+  ; Failed?
+  IntCmp $9 0 write
+    MessageBox MB_OK|MB_ICONSTOP "Can't create registry key! ($9)"
+    Goto noClose
+
+  write:
+    ; Fill in the buffer with our strings
+    StrCpy $2 $1                            ; Initial position
+
+    StrLen $9 'PATH=$PythonHome;$PythonHome\Scripts;$GDALHome'                   ; Length of first string
+    IntOp $9 $9 + 1                         ; Plus null
+    System::Call "*$2(&t$9 'PATH=$PythonHome;$PythonHome\Scripts;$GDALHome')"    ; Place the string
+    IntOp $2 $2 + $9                        ; Advance to the next position
+    
+    StrLen $9 'GDAL_HOME=${GDAL_HOME}'                   ; Length of second string
+    IntOp $9 $9 + 1                         ; Plus null
+    System::Call "*$2(&t$9 'GDAL_HOME=${GDAL_HOME}')"    ; Place the string
+    IntOp $2 $2 + $9                        ; Advance to the next position
+
+    StrLen $9 'GDAL_LIBRARY_PATH=${GDAL_HOME}\${GDAL_DLL}'                   ; Length of second string
+    IntOp $9 $9 + 1                         ; Plus null
+    System::Call "*$2(&t$9 'GDAL_LIBRARY_PATH=${GDAL_HOME}\${GDAL_DLL}')"    ; Place the string
+    IntOp $2 $2 + $9                        ; Advance to the next position
+
+    StrLen $9 'GEOS_LIBRARY_PATH=${GDAL_HOME}\${GEOS_DLL}'                   ; Length of second string
+    IntOp $9 $9 + 1                         ; Plus null
+    System::Call "*$2(&t$9 'GEOS_LIBRARY_PATH=${GDAL_HOME}\${GEOS_DLL}')"    ; Place the string
+    IntOp $2 $2 + $9                        ; Advance to the next position
+    
+    System::Call "*$2(&t1 '')"              ; Place the terminating null
+    IntOp $2 $2 + 1                         ; Advance to the next position
+
+    ; Create/write the value
+    IntOp $2 $2 - $1                        ; Total length
+    System::Call "${RegSetValueEx}(r0, '${VALUE}', 0, ${REG_MULTI_SZ}, r1, r2) .r9"
+    ; Failed?
+    IntCmp $9 0 done
+      MessageBox MB_OK|MB_ICONSTOP "Can't set key value! ($9)"
+      Goto done
+
+  done:
+    ; Close the registry key
+    System::Call "${RegCloseKey}(r0)"
+
+noClose:
+  ; Clear the buffer
+  SetPluginUnload manual
+  System::Free $1
 FunctionEnd
 
 ######################################################################
@@ -1518,6 +1622,10 @@ Section "Main" SectionMain
     ExecWait "${WINLAMP_EXE} -GEOSERVER-PORT=$Port -GEONODE-FOLDER=$\"$INSTDIR\${GEONODE_FOLDER}$\" /D=$INSTDIR"
 
     ExecWait '$INSTDIR\${GEONODE_FOLDER}\python_env.bat' ; restart apache service  
+    
+    ; Write Apache Service Rgistry Values
+    Call ApacheRegWrite
+    
     ExecWait '$SYSDIR\net stop was /y' ; stop World Wide Web Publishing service
     ExecWait '$SYSDIR\sc config "W3SVC" start= disabled' ; disable World Wide Web Publishing service
     ExecWait '$INSTDIR\Apache2\bin\Apache.exe -k restart -n "Apache2"' ; restart apache service  
@@ -1574,8 +1682,10 @@ Section "Main" SectionMain
     
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
+    
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GeoNode.lnk" "http://localhost/" \
                    "" "$INSTDIR\geonode_white.ico" 0
+                   
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\uninstall_GeoNode.exe"
     
     CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GeoNode VirtualEnv Setup.lnk" "$INSTDIR\${GEONODE_FOLDER}\virtualenv_setup.bat" \
@@ -1602,9 +1712,11 @@ Section "Main" SectionMain
   endInstall:
   
       ; Cleanup
+      Delete "$INSTDIR\${GDAL_ZIP}"
       Delete "$INSTDIR\${TOMCAT_ZIP}"
       Delete "$INSTDIR\${GEOSERVER_DATA_ZIP}"
       Delete "$INSTDIR\${GEONODE_ZIP}"
+      Delete "$INSTDIR\${GEONODE_FOLDER}\${GEONODE_ENV_ZIP}"
 	  
       ; registry settings, useful for add/remove programs
       WriteRegStr         HKEY_LOCAL_MACHINE \
@@ -1637,11 +1749,9 @@ Section "Main" SectionMain
       
      
      ; ask for reboot
-     MessageBox MB_YESNO "Reboot is needed in order to finish the installation. Do you want to reboot now?" IDNO end
+     ;MessageBox MB_YESNO "Reboot is needed in order to finish the installation. Do you want to reboot now?" IDNO end
 
-     SetRebootFlag true
-
-     
+     ;SetRebootFlag true
 
      end:
   
@@ -1666,19 +1776,20 @@ Section "Uninstall"
   
   ; Uninstall Apache2
   ExecWait '$INSTDIR\Apache2\uninstall_WinLAMP.exe'
-  Sleep 10000 ; to make sure it's fully stopped
-  
-  ; Uninstall Python and GDAL
-  ExecWait '"msiexec" /x "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
-  ExecWait '"msiexec" /x "$INSTDIR\${VC_FOR_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
-  ExecWait '"msiexec" /x "$INSTDIR\${GDAL_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
-  ExecWait '"msiexec" /x "$INSTDIR\${PYTHON27_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
-  
+
   ; Uninstall POstgreSQL and PostGIS
   ExecWait "$INSTDIR\postgres\${POSTGIS_UNINSTALL_EXE}"
   ExecWait "$INSTDIR\postgres\${POSTGRESQL_UNINSTALL_EXE}"
   ExecWait '$SYSDIR\net user postgres /delete' ; stop apache tomcat service
+
+  Sleep 10000 ; to make sure it's fully stopped
   
+  ; Uninstall Python and GDAL
+  #ExecWait '"msiexec" /x "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
+  ExecWait '"msiexec" /x "$INSTDIR\${GDAL_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
+  ExecWait '"msiexec" /x "$INSTDIR\${VC_FOR_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
+  ExecWait '"msiexec" /x "$INSTDIR\${PYTHON27_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
+
   ;Delete files and dirs in installation folder
   Delete $INSTDIR\uninstall_GeoNode.exe
   
