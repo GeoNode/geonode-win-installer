@@ -689,7 +689,7 @@ Function PostgreSQLMessageBox
   File "${POSTGRESQL_EXE}"
   ExecWait '${POSTGRESQL_EXE} --mode unattended --unattendedmodeui minimal \
    --prefix "$INSTDIR\postgres" --datadir "$INSTDIR\postgres\data" --serverport 5454 --superpassword  "g30Nod3-P0stgr3s" \ 
-   --install_runtimes 1 --install_plpgsql 1 --create_shortcuts 1'
+   --install_runtimes 1 --install_plpgsql 1 --create_shortcuts 0 --enable_acledit 1'
   endPSQL324:
 
   ;pg_hba security conf file
