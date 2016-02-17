@@ -688,7 +688,7 @@ Function PostgreSQLMessageBox
   
   File "${POSTGRESQL_EXE}"
   ExecWait '${POSTGRESQL_EXE} --mode unattended --unattendedmodeui minimal \
-   --prefix "$INSTDIR\postgres" --datadir "$INSTDIR\postgres\data" \ 
+   --prefix "$INSTDIR\postgres" --datadir "$INSTDIR\postgres\data" --serverport 5454 --superpassword  "g30Nod3-P0stgr3s" \ 
    --install_runtimes 1 --install_plpgsql 1 --create_shortcuts 1'
   endPSQL324:
 
@@ -726,7 +726,7 @@ Function PostGISMessageBox
   #MessageBox MB_YESNO "Install PostGIS 1.5.4?" /SD IDYES IDNO endPGIS324
   
 	File "${POSTGIS_EXE}"
-	ExecWait '${POSTGIS_EXE} /USERNAME=postgres /PASSWORD=postgres /DATABASE=template_postgis /O /D=$INSTDIR\postgres'
+	ExecWait '${POSTGIS_EXE} /USERNAME=postgres /PASSWORD=g30Nod3-P0stgr3s /PORT=5454 /DATABASE=template_postgis /O /D=$INSTDIR\postgres'
 
   	; By setting the output path to the temporary directory, we force NSIS to make the directory exist. This makes debugging the installer so much easier! Note that the file list in inputfile.nsh overrides this value anyway...
 	SetOutPath "${TEMPDIR}"
@@ -741,8 +741,8 @@ Function PostGISMessageBox
 
 	postgres_available:		
 		FileOpen $2 "${TEMPDIR}\create_base_db.bat" "w"
-		FileWrite $2 "set PGPASSWORD=postgres$\r$\n"
-		FileWrite $2 "set PGPORT=5432$\r$\n"
+		FileWrite $2 "set PGPASSWORD=g30Nod3-P0stgr3s$\r$\n"
+		FileWrite $2 "set PGPORT=5454$\r$\n"
 		FileWrite $2 '"$INSTDIR\postgres\bin\dropdb.exe" -U postgres geonode$\r$\n'
         FileWrite $2 '"$INSTDIR\postgres\bin\dropdb.exe" -U postgres geonode_imports$\r$\n'
         FileWrite $2 '"$INSTDIR\postgres\bin\dropuser.exe" -U postgres geonode$\r$\n'
@@ -1452,9 +1452,8 @@ Section "Main" SectionMain
   ZipDLL::extractall "${GEONODE_ENV_ZIP}" ""
 	
     ; Copy whl files
-    ; File python_deps\*.whl
-	; File python_deps\*.tar.gz
-    File python_deps\virtualenv-13.1.2-py2.py3-none-any.whl
+    File python_deps\*.whl
+	;File python_deps\*.tar.gz
     
     ; Copy startup script
     ; File startup.bat
@@ -1524,6 +1523,8 @@ Section "Main" SectionMain
 	FileWrite $9 '        "NAME": "geonode",$\r$\n'
 	FileWrite $9 '        "USER": "geonode",$\r$\n'
 	FileWrite $9 '        "PASSWORD": "geonode",$\r$\n'
+	FileWrite $9 '        "HOST" : "localhost",$\r$\n'
+	FileWrite $9 '        "PORT" : 5454,$\r$\n'
 	FileWrite $9 '    },$\r$\n'
 	FileWrite $9 '    # vector datastore for uploads$\r$\n'
 	FileWrite $9 '    "datastore" : {$\r$\n'
@@ -1532,7 +1533,7 @@ Section "Main" SectionMain
 	FileWrite $9 '       "USER" : "geonode",$\r$\n'
 	FileWrite $9 '       "PASSWORD" : "geonode",$\r$\n'
 	FileWrite $9 '       "HOST" : "localhost",$\r$\n'
-	FileWrite $9 '       "PORT" : "5432",$\r$\n'
+	FileWrite $9 '       "PORT" : 5454,$\r$\n'
 	FileWrite $9 '    }$\r$\n'
 	FileWrite $9 '}$\r$\n'
 	FileWrite $9 '$\r$\n'

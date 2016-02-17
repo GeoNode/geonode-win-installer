@@ -9,8 +9,8 @@ virtualenv .
 
 call Scripts\activate.bat
 
-rem pip install -e .
+pip install --no-index -I Paver-1.2.4-py2.py3-none-any.whl
 
 paver sync
-python manage.py collectstatic
 
+python manage.py collectstatic
