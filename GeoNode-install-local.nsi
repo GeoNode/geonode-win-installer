@@ -40,6 +40,7 @@ SetCompress         auto
 !define PYTHON27_MSI "python-2.7.10.msi"
 !define VC_FOR_PYTHON_MSI "VCForPython27.msi"
 !define GDAL_PYTHON_MSI "GDAL-1.11.3.win32-py2.7.msi"
+!define GDAL_CORE_MSI "gdal-111-1500-core.msi"
 
 !define GDAL_ZIP "GDAL.zip"
 !define GDAL_DLL "gdal111.dll"
@@ -645,10 +646,10 @@ Function PythonLeave
     Push "$PythonHome;$INSTDIR\${GEONODE_FOLDER}\Scripts;$GDALHome"
 	call WriteEnvVar
     
-	ReadEnvStr $R0 "PATH"
-	Push "PATH"
-    Push "%GEONODE_PATHEXT%;$R0"
-	call WriteEnvVar
+	;ReadEnvStr $R0 "PATH"
+	;Push "PATH"
+    ;Push "%GEONODE_PATHEXT%;$R0"
+	;call WriteEnvVar
     
     ; update system path
     ;Push "$INSTDIR\Apache2\bin;$PythonHome;$PythonHome\Scripts;$GDALHome"
@@ -1261,15 +1262,15 @@ Function GDAL
   File ${GDAL_ZIP}
   
   ZipDLL::extractall "${GDAL_ZIP}" ""
+  
+  ; GDAL core
+  File "${GDAL_CORE_MSI}"
+  ExecWait '"msiexec" /i "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
 
   ; Visual C++ compiler for python27
   File "${VC_FOR_PYTHON_MSI}"
   ExecWait '"msiexec" /i "$INSTDIR\${VC_FOR_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   
-  ; GDAL core
-  #File "${GDAL_CORE_MSI}"
-  #ExecWait '"msiexec" /i "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
-
   ; set Env Var GDAL_LIBRARY_PATH
   #Push "GDAL_HOME"
   #Push "${GDAL_HOME}"
@@ -1284,7 +1285,7 @@ Function GDAL
   #Push "GEOS_LIBRARY_PATH"
   #Push "${GDAL_HOME}\geos_c.dll"
   #call WriteEnvVar
-    
+
   ; GDAL Python Bindings
   File "${GDAL_PYTHON_MSI}"
   ExecWait '"msiexec" /i "$INSTDIR\${GDAL_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
@@ -1786,7 +1787,7 @@ Section "Uninstall"
   Sleep 10000 ; to make sure it's fully stopped
   
   ; Uninstall Python and GDAL
-  #ExecWait '"msiexec" /x "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
+  ExecWait '"msiexec" /x "$INSTDIR\${GDAL_CORE_MSI}" /passive TARGETDIR="$INSTDIR\GDAL"'
   ExecWait '"msiexec" /x "$INSTDIR\${GDAL_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   ExecWait '"msiexec" /x "$INSTDIR\${VC_FOR_PYTHON_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
   ExecWait '"msiexec" /x "$INSTDIR\${PYTHON27_MSI}" /passive TARGETDIR="$INSTDIR\Python27"'
