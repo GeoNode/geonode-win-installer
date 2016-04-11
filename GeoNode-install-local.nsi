@@ -1807,20 +1807,18 @@ Section "Uninstall"
   
   ; Delete Shortcuts
   RMDir /r "$SMPROGRAMS\${APPNAMEANDVERSION}"
-  RMDir /r "$SMPROGRAMS\$STARTMENU_FOLDER"
-  RMDir /r "$SMPROGRAMS\${STARTMENU_FOLDER}"
   
   ;Remove environment variables
-  Push "GDAL_HOME"
-  Call un.DeleteEnvVar
-  Push "GDAL_LIBRARY_PATH"
-  Call un.DeleteEnvVar
-  Push "GEOS_LIBRARY_PATH"  
-  Call un.DeleteEnvVar
+  #Push "GDAL_HOME"
+  #Call un.DeleteEnvVar
+  #Push "GDAL_LIBRARY_PATH"
+  #Call un.DeleteEnvVar
+  #Push "GEOS_LIBRARY_PATH"  
+  #Call un.DeleteEnvVar
   Push "GEONODE_PATHEXT"
   Call un.DeleteEnvVar
-  Push "JRE_HOME"
-  Call un.DeleteEnvVar
+  #Push "JRE_HOME"
+  #Call un.DeleteEnvVar
   
   ; remove the path setting
   Push "%GEONODE_PATHEXT%"
