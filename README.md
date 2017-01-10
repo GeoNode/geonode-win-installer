@@ -8,7 +8,7 @@ In order to compile the installer:
    
    b) Copy and replace "NSIS Plugins/plugins/*.*" into "C:/Program Files (x86)/NSIS/"
    
-2. Downlaod the "geonode-2.5.5.zip" source folder from https://github.com/GeoNode/geonode/archive/2.5.6.zip
+2. Downlaod the "geonode-2.5.5.zip" source folder from https://github.com/GeoNode/geonode/archive/2.5.5.zip
 
 3. Download "geoserver.war" from http://build.geonode.org/geoserver/latest/geoserver-2.9.x.war
 
