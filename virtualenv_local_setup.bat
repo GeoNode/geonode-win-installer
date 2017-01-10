@@ -1,5 +1,5 @@
 @echo off
-echo TITLE Setup python Virtualenv
+echo Setup python Virtualenv
 
 call python_env.bat
 
@@ -12,5 +12,7 @@ call Scripts\activate.bat
 pip install --no-index -I Paver-1.2.4-py2.py3-none-any.whl
 
 paver sync
+
+python manage.py loaddata initial_data
 
 python manage.py collectstatic

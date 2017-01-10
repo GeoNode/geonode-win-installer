@@ -12,14 +12,14 @@ SetCompress         auto
 
 ; Define your application name
 !define APPNAME "GeoNode"
-!define VERSION "2.4.x"
+!define VERSION "2.5.x"
 ;!define LONGVERSION "1.0.0.0"
 !define APPNAMEANDVERSION "${APPNAME}-${VERSION}"
 
 ; Place all temporary files used by the installer in their own subdirectory under $TEMP (makes the files easier to find)
 !define TEMPDIR "$TEMP\geonode_installer"
 
-!define JRE_EXE "jre-7u80-windows-i586.exe"
+!define JRE_EXE "jre-8u112-windows-i586.exe"
 
 !define GEONODE_ZIP "geonode-${VERSION}.zip"
 !define GEONODE_ENV_ZIP "env_geonode-${VERSION}.zip"
@@ -165,7 +165,7 @@ Page custom CheckUserType                                     ; Die if not admin
 !insertmacro MUI_PAGE_DIRECTORY                               ; Where to install
 !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER ; Start menu location
 
-Page custom JREInstall                                        ; Install JRE 7
+Page custom JREInstall                                        ; Install JRE 8
 Page custom JREInstallMessageBox JRELeave
 ;Page custom GetJRE                                           ; Look for exisitng JRE
 ;Page custom JRE JRELeave                                     ; Set the JRE
@@ -292,8 +292,8 @@ Function JREInstall
   nsDialogs::Create 1018
   ; ${NSD_Create*} x y width height text
 
-  ${NSD_CreateLabel} 0 0 100% 64u "You need Java JRE 7 installed on your system.\
-                                   $\r$\n$\r$\nThis step will install the Oracle Java JRE 1.7 update 80 32bit\
+  ${NSD_CreateLabel} 0 0 100% 64u "You need Java JRE 8 installed on your system.\
+                                   $\r$\n$\r$\nThis step will install the Oracle Java JRE 1.8 update 112 32bit\
                                    on your System which is necessary to run GeoServer."
   
   nsDialogs::Show
@@ -302,13 +302,14 @@ Function JREInstall
 FunctionEnd
 
 Function JREInstallMessageBox  
-  ;MessageBox MB_YESNO "Install Java JRE 7?" /SD IDYES IDNO endJREInstall7
+  ;MessageBox MB_YESNO "Install Java JRE 8?" /SD IDYES IDNO endJREInstall7
   
   SetOutPath $INSTDIR
   
   File "${JRE_EXE}"
   
-  ExecWait '${JRE_EXE} /s INSTALLDIR=$INSTDIR\jre SPONSORS=0 AUTO_UPDATE=0 STATIC=1'
+  #ExecWait '${JRE_EXE} /s INSTALLDIR=$INSTDIR\jre SPONSORS=0 AUTO_UPDATE=1 STATIC=1'
+  ExecWait '${JRE_EXE} INSTALLDIR=$INSTDIR\jre SPONSORS=0 AUTO_UPDATE=1 STATIC=1 REMOVEOUTOFDATEJRES=1 WEB_JAVA_SECURITY_LEVEL=VH'
   
   StrCpy $JavaHome "$INSTDIR\jre"
   
@@ -1538,7 +1539,6 @@ Section "Main" SectionMain
 	FileWrite $9 '    }$\r$\n'
 	FileWrite $9 '}$\r$\n'
 	FileWrite $9 '$\r$\n'
-	FileWrite $9 '# OGC (WMS/WFS/WCS) Server Settings$\r$\n'
 	FileWrite $9 '# OGC (WMS/WFS/WCS) Server Settings$\r$\n'
 	FileWrite $9 'OGC_SERVER = {$\r$\n'
 	FileWrite $9 '    "default": {$\r$\n'
