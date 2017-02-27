@@ -3,16 +3,17 @@ echo Setup python Virtualenv
 
 call python_env.bat
 
+pip install --no-index -I pip-9.0.1-py2.py3-none-any.whl
 pip install --no-index -I virtualenv-13.1.2-py2.py3-none-any.whl
 
-virtualenv .
+virtualenv --relocatable .
 
 call Scripts\activate.bat
 
 pip install --no-index -I Paver-1.2.4-py2.py3-none-any.whl
 
-paver sync
+rem paver setup
 
-python manage.py loaddata initial_data
+paver sync
 
 python manage.py collectstatic

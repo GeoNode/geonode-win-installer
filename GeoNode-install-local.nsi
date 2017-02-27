@@ -12,7 +12,7 @@ SetCompress         auto
 
 ; Define your application name
 !define APPNAME "GeoNode"
-!define VERSION "2.5.5"
+!define VERSION "2.6.x"
 ;!define LONGVERSION "1.0.0.0"
 !define APPNAMEANDVERSION "${APPNAME}-${VERSION}"
 

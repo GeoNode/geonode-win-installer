@@ -18,7 +18,7 @@ if (!$ARGV[1]) {$SERVERNAME="localhost"}
 $ADMINADDRESS   = $ARGV[2] || "admin\@email\.address";
 $SERVERPORT     = $ARGV[3] || "80";
 $GEOSERVERPORT  = $ARGV[4] || "8080";
-$GEONODEPATH    = $ARGV[5] || "C:\GeoNode-2.5\geonode-2.5.x";
+$GEONODEPATH    = $ARGV[5] || "C:\GeoNode-2.6\geonode-2.6.x";
 $GEONODEPATH    =~ s/\\/\//g;
 
 print " installpath:    $INSTALLPATH \n";
@@ -55,7 +55,7 @@ print "\n $filein \n $fileout \n";
 open (FILE, $filein) || die "Cannot read from $filein";
 open (TMP, ">$fileout") || die "Cannot write to $fileout\n";
 while (<FILE>) {
-	s/C:\/GeoNode-2.5/$GEONODEPATH/gi;
+	s/C:\/GeoNode-2.6/$GEONODEPATH/gi;
     s/8080/$GEOSERVERPORT/gi;
 	print TMP;
 }

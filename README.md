@@ -8,11 +8,11 @@ In order to compile the installer:
    
    b) Copy and replace "NSIS Plugins/plugins/*.*" into "C:/Program Files (x86)/NSIS/"
    
-2. Downlaod the "geonode-2.5.5.zip" source folder from https://github.com/GeoNode/geonode/archive/2.5.5.zip
+2. Downlaod the "geonode-2.6.x.zip" source folder from https://github.com/GeoNode/geonode/archive/2.6.x.zip
 
-3. Download "geoserver.war" from http://build.geonode.org/geoserver/latest/geoserver-2.9.x.war
+3. Download and rename to "geoserver.war" from http://build.geonode.org/geoserver/latest/geoserver-2.9.x-oauth2.war
 
-4. Download "data.zip" from http://build.geonode.org/geoserver/latest/data-2.9.x.zip
+4. Download and rename to "data.zip" from http://build.geonode.org/geoserver/latest/data-2.9.x-oauth2.zip
 
 5. Build "postgis-pg84-setup-1.5.4-2.exe"; Compile with NSIS the file "postgis-pg84-1.5.4-installersrc/win32inst/postgis.nsi"
    Move the "postgis-pg84-setup-1.5.4-2.exe" into the GeoNode installer root dir
