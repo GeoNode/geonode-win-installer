@@ -6,7 +6,7 @@ call python_env.bat
 pip install --no-index -I pip-9.0.1-py2.py3-none-any.whl
 pip install --no-index -I virtualenv-13.1.2-py2.py3-none-any.whl
 
-virtualenv --relocatable .
+virtualenv .
 
 call Scripts\activate.bat
 
