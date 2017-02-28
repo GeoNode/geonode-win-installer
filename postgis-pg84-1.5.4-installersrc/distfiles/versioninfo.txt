@@ -1,5 +1,0 @@
-This package was compiled with the following:
-
-GEOS 3.3.5 http://trac.osgeo.org/geos/  http://download.osgeo.org/geos/geos-3.3.5.tar.bz2
-PostGIS 1.5.5 r10082 http://postgis.org/download/postgis-1.5.5.tar.gz
-PROJ 4.6.1

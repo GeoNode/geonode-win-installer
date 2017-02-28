@@ -12,7 +12,7 @@ SetCompress         auto
 
 ; Define your application name
 !define APPNAME "GeoNode"
-!define VERSION "2.6.x"
+!define VERSION "master"
 ;!define LONGVERSION "1.0.0.0"
 !define APPNAMEANDVERSION "${APPNAME}-${VERSION}"
 
@@ -27,10 +27,14 @@ SetCompress         auto
 !define GEONODE_FOLDER "geonode-${VERSION}"
 !define GEOSERVER_DATA_ZIP "data.zip"
 
-!define POSTGRESQL_EXE "postgresql-8.4.22-1-windows.exe"
-!define POSTGIS_EXE "postgis-pg84-setup-1.5.4-2.exe"
+;!define POSTGRESQL_EXE "postgresql-8.4.22-1-windows.exe"
+!define POSTGRESQL_EXE "postgresql-9.6.2-2-windows.exe"
+;!define POSTGIS_EXE "postgis-pg84-setup-1.5.4-2.exe"
+!define POSTGIS_EXE "postgis-bundle-pg96x32-setup-2.3.0-1.exe"
+;!define POSTGRESQL_UNINSTALL_EXE "uninstall-postgresql.exe"
 !define POSTGRESQL_UNINSTALL_EXE "uninstall-postgresql.exe"
-!define POSTGIS_UNINSTALL_EXE "uninstall-postgis-pg84-1.5.4-2.exe"
+;!define POSTGIS_UNINSTALL_EXE "uninstall-postgis-pg84-1.5.4-2.exe"
+!define POSTGIS_UNINSTALL_EXE "uninstall-postgis-bundle-pg96x32-2.3.0-1.exe"
 
 !define WINLAMP_EXE "WinLAMP.4.0.0-geonode.exe"
 
@@ -221,9 +225,9 @@ LangString TEXT_JRE_TITLE ${LANG_ENGLISH} "Java Runtime Environment"
 LangString TEXT_JRE_SUBTITLE ${LANG_ENGLISH} "Java Runtime Environment path selection"
 LangString TEXT_LAMP_TITLE ${LANG_ENGLISH} "WinLAMP 4.0.0"
 LangString TEXT_LAMP_SUBTITLE ${LANG_ENGLISH} "WinLAMP Installation"
-LangString TEXT_PSQL_TITLE ${LANG_ENGLISH} "PostgreSQL 8.4.22"
+LangString TEXT_PSQL_TITLE ${LANG_ENGLISH} "PostgreSQL 9.6.2"
 LangString TEXT_PSQL_SUBTITLE ${LANG_ENGLISH} "PostgreSQL Installation"
-LangString TEXT_PGIS_TITLE ${LANG_ENGLISH} "PostGIS 1.5.5"
+LangString TEXT_PGIS_TITLE ${LANG_ENGLISH} "PostGIS 2.3.0"
 LangString TEXT_PGIS_SUBTITLE ${LANG_ENGLISH} "PostGIS Installation"
 LangString TEXT_DATADIR_TITLE ${LANG_ENGLISH} "GeoServer Data Directory"
 LangString TEXT_DATADIR_SUBTITLE ${LANG_ENGLISH} "GeoServer Data Directory path selection"
@@ -676,7 +680,7 @@ Function PostgreSQL
   ; ${NSD_Create*} x y width height text
 
   ${NSD_CreateLabel} 0 0 100% 64u "You need PostgreSQL with PostGIS DB installed on your system.\
-                                   $\r$\n$\r$\n$\r$\n$\r$\nThis step will install PostgreSQL 8.4.22 \
+                                   $\r$\n$\r$\n$\r$\n$\r$\nThis step will install PostgreSQL 9.6.2 \
                                    on your system."
   
   nsDialogs::Show
@@ -686,12 +690,12 @@ FunctionEnd
 
 Function PostgreSQLMessageBox
 
-  #MessageBox MB_YESNO "Install PostgreSQL 8.4.22?" /SD IDYES IDNO endPSQL324
+  #MessageBox MB_YESNO "Install PostgreSQL 9.6.2?" /SD IDYES IDNO endPSQL324
   
   File "${POSTGRESQL_EXE}"
   ExecWait '${POSTGRESQL_EXE} --mode unattended --unattendedmodeui minimal \
    --prefix "$INSTDIR\postgres" --datadir "$INSTDIR\postgres\data" --serverport 5454 --superpassword  "g30Nod3-P0stgr3s" \ 
-   --install_runtimes 1 --install_plpgsql 1 --create_shortcuts 0 --enable_acledit 1'
+   --install_runtimes 1 --create_shortcuts 0 --enable_acledit 1'
   endPSQL324:
 
   ;pg_hba security conf file
@@ -704,7 +708,7 @@ Function PostgreSQLMessageBox
   FileWrite $R8 "host    all         all         ::1/128               trust$\r$\n"
   FileClose $R8
   
-  SimpleSC::RestartService "postgresql-8.4"
+  SimpleSC::RestartService "postgresql-9.6"
 FunctionEnd
 
 Function PostGIS
@@ -715,7 +719,7 @@ Function PostGIS
   ; ${NSD_Create*} x y width height text
 
   ${NSD_CreateLabel} 0 0 100% 64u "PostGIS is necessary for the system to work and must be installed before DB initialization.\
-                                   $\r$\n$\r$\n$\r$\n$\r$\nThis step will install PostGIS 1.5.4 \
+                                   $\r$\n$\r$\n$\r$\n$\r$\nThis step will install PostGIS 2.3.0 \
                                    on your system."
   
   nsDialogs::Show
@@ -725,7 +729,7 @@ FunctionEnd
 
 Function PostGISMessageBox
 
-  #MessageBox MB_YESNO "Install PostGIS 1.5.4?" /SD IDYES IDNO endPGIS324
+  #MessageBox MB_YESNO "Install PostGIS 2.3.0?" /SD IDYES IDNO endPGIS324
   
 	File "${POSTGIS_EXE}"
 	ExecWait '${POSTGIS_EXE} /USERNAME=postgres /PASSWORD=g30Nod3-P0stgr3s /PORT=5454 /DATABASE=template_postgis /O /D=$INSTDIR\postgres'
@@ -755,9 +759,9 @@ Function PostGISMessageBox
         ;FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -d geonode_imports -c "create extension postgis;"$\r$\n'
         FileWrite $2 '"$INSTDIR\postgres\bin\createlang.exe" -U postgres plpgsql geonode_imports$\r$\n'
         FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -c "UPDATE pg_database SET datistemplate=true WHERE datname=$\'geonode_imports$\'" geonode_imports$\r$\n'
-		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-1.5\postgis.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
-		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-1.5\spatial_ref_sys.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
-		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-1.5\postgis_comments.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
+		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-2.3\postgis.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
+		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-2.3\spatial_ref_sys.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
+		FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -f "$INSTDIR\postgres\share\contrib\postgis-2.3\postgis_comments.sql" -d geonode_imports --set ON_ERROR_STOP=1$\r$\n'
         FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -d geonode_imports -c "grant all on geometry_columns to public;"$\r$\n'
         FileWrite $2 '"$INSTDIR\postgres\bin\psql.exe" -U postgres -d geonode_imports -c "grant all on geography_columns to public;"$\r$\n'
 		FileClose $2

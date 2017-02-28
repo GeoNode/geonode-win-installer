@@ -12,6 +12,9 @@ call Scripts\activate.bat
 
 pip install --no-index -I Paver-1.2.4-py2.py3-none-any.whl
 
+pip install -r requirements.txt
+pip install . --upgrade
+
 rem paver setup
 
 paver sync
